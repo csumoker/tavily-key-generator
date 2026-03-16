@@ -26,6 +26,20 @@
 - 可选自动上传到你的 key 池服务器
 - Windows / macOS / Linux 兼容启动
 
+## Screenshots
+
+### 启动台
+
+![Launcher Overview](./docs/screenshots/launcher-overview.jpg)
+
+### 并发注册与真实验证
+
+![Registration Success](./docs/screenshots/registration-success.jpg)
+
+### Proxy 控制台
+
+![Proxy Dashboard](./docs/screenshots/proxy-dashboard.jpg)
+
 ## Quick Start
 
 ### 1. Clone

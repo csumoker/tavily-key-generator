@@ -27,6 +27,20 @@ The goal of this rebuild is simple: make the Tavily / Auth0 / Cloudflare registr
 - Optionally uploads verified keys to your own key pool server
 - Startup scripts for Windows, macOS, and Linux
 
+## Screenshots
+
+### Launcher
+
+![Launcher Overview](./docs/screenshots/launcher-overview.jpg)
+
+### Concurrent Registration and Real API Validation
+
+![Registration Success](./docs/screenshots/registration-success.jpg)
+
+### Proxy Dashboard
+
+![Proxy Dashboard](./docs/screenshots/proxy-dashboard.jpg)
+
 ## Quick Start
 
 ### 1. Clone the repository
