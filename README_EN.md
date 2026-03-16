@@ -1,67 +1,81 @@
-# Tavily Key Generator - Rebuilt Edition
+# API Key Generator - Multi-Service Edition
 
 [中文说明](./README.md)
 
-This is the fully rebuilt edition of the Tavily registration tool.
+This is the current production-ready multi-service registration toolkit.
+It puts **Tavily** and **Firecrawl** behind the same launcher:
 
-The old unstable script flow has been replaced with a single unified pipeline:
+- **Tavily**: AI search API
+- **Firecrawl**: web scraping API
 
-- Real local browser automation
-- Local Turnstile solver
-- Email API based verification-code retrieval
-- Real Tavily API validation immediately after a key is extracted
+Unlike the older fragmented scripts, the current workflow is built around a
+single stable pipeline:
 
-The goal of this rebuild is simple: make the Tavily / Auth0 / Cloudflare registration flow usable, repeatable, concurrent, and suitable for unattended background execution.
+- Real local browser registration
+- Local Turnstile solver for Tavily
+- Email API based verification-link / code retrieval
+- Real API validation immediately after a key is extracted
+- Optional automatic upload to the multi-service proxy pool
+
+The goal is straightforward: keep Tavily / Firecrawl registration, validation,
+output, and upload inside one workflow that can actually be reused long term.
 
 For a general Cloudflare unlimited-alias domain mail guide, see:
 [Cloudflare Mail Setup Guide](./docs/Cloudflare-Mail-Setup-Guide.md)
 
+For the Chinese version of that guide, see:
+[Cloudflare Mail Setup Guide (Chinese)](./docs/Cloudflare%E9%82%AE%E4%BB%B6%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3.md)
+
 ## Features
 
-- Single launcher entry, no long command-line arguments required
-- Automatically creates and reuses `venv`
-- Automatically installs Python dependencies and browser dependencies
-- Supports Cloudflare custom-domain mail API
-- Supports DuckMail API
-- Supports multiple domains with runtime selection
-- Supports concurrent registration
-- Runs the browser in headless mode by default
-- Verifies each extracted API key with a real Tavily API call
-- Optionally uploads verified keys to your own key pool server
-- Startup scripts for Windows, macOS, and Linux
+- Multi-service launcher: choose Tavily or Firecrawl at startup
+- Automatic environment bootstrap: checks `venv`, dependencies, and browsers
+- Unified mail layer: supports Cloudflare Mail API and DuckMail
+- Multi-domain support: choose the active domain at runtime
+- Concurrent registration: batch and parallel runs are supported
+- Background browser mode: headless by default, visible mode when debugging
+- Real usability verification: validates the key against the official API
+- Automatic upload to proxy pools: uploads include the service field, so the
+  server can place Tavily and Firecrawl keys into the correct pools
+- Proxy console: separate key pools, token pools, and real quota sync
+- Cross-platform startup: Windows, macOS, and Linux
 
 ## Screenshots
 
-### Launcher
+### Multi-Service Launcher
 
-![Launcher Overview](./docs/screenshots/launcher-overview.jpg)
+![Multi Service Launcher](./docs/screenshots/multi-service-launcher.jpg)
 
 ### Concurrent Registration and Real API Validation
 
 ![Registration Success](./docs/screenshots/registration-success.jpg)
 
-### Proxy Dashboard
+### Proxy Workspace Switcher
 
-![Proxy Dashboard](./docs/screenshots/proxy-dashboard.jpg)
+![Proxy Workspace Switcher](./docs/screenshots/proxy-workspace-switcher.jpg)
+
+### Proxy Key Pool Details
+
+![Proxy Key Pool](./docs/screenshots/proxy-key-pool.jpg)
 
 ## Quick Start
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/skernelx/tavily-key-generator.git
 cd tavily-key-generator
 ```
 
-### 2. Configure the environment
+### 2. Configure
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your mail provider settings and optional upload settings.
+Edit `.env` and fill in your mail configuration and optional upload settings.
 
-### 3. Run the launcher
+### 3. Run
 
 macOS / Linux:
 
@@ -81,28 +95,27 @@ Windows:
 start_auto.bat
 ```
 
-## What Happens on Startup
+## How It Works
 
 When you run the launcher, it will automatically:
 
-1. Create or reuse `venv`
-2. Upgrade `pip`, `setuptools`, and `wheel`
-3. Install packages from `requirements.txt`
-4. Download Camoufox if needed
-5. Install Playwright Chromium if needed
-6. Read `.env`
-7. Check the configured mail provider
-8. Let you choose a domain if multiple domains are configured
-9. Ask for the registration count
-10. Ask for the concurrency level
-11. Ask whether to upload keys automatically
-12. Start the local solver
-13. Handle email verification and password setup
-14. Recover from random password-page challenge failures
-15. Extract the API key
-16. Verify the API key with a real API call for the selected service
-17. Save the result to `accounts.txt` or `firecrawl_accounts.txt`
-18. Upload the verified key with its service tag if upload is enabled
+1. Choose the target service: Tavily or Firecrawl
+2. Create or reuse `venv`
+3. Install Python dependencies
+4. Install Camoufox / Playwright browser dependencies
+5. Load `.env`
+6. Validate the configured mail provider
+7. Let you choose the active domain if multiple domains are configured
+8. Ask for the registration count
+9. Ask for the concurrency level
+10. Ask whether to upload results automatically
+11. Start the local solver for Tavily
+12. Handle email verification and password setup
+13. Recover from random challenge cases on the Tavily password page
+14. Extract the API key
+15. Validate the key with a real API request
+16. Save results to `accounts.txt` or `firecrawl_accounts.txt`
+17. Upload results to the server when enabled
 
 ## Runtime Flow
 
@@ -113,15 +126,16 @@ run.py
   -> choose domain
   -> input count / concurrency
   -> choose upload or not
-  -> [Tavily only] start local Turnstile solver
-  -> create mailbox with service-specific prefix
+  -> [Tavily only] start Turnstile solver
+  -> create mailbox
   -> open signup page
   -> [Tavily only] solve Turnstile locally
-  -> receive email code or verification link
-  -> set password / finish verification
+  -> receive email verification link
+  -> set password
+  -> [Tavily only] recover random password-page challenge
   -> enter dashboard
   -> extract API key
-  -> verify API key with the real service API
+  -> verify API key with real API call
   -> save / upload
 ```
 
@@ -143,7 +157,7 @@ Notes:
 
 - Use `EMAIL_DOMAIN` for a single domain
 - Use `EMAIL_DOMAINS` for multiple domains
-- The launcher will let you choose the active domain at runtime
+- The launcher lets you choose the active domain at runtime
 
 ### DuckMail API
 
@@ -159,9 +173,10 @@ Notes:
 
 - You can configure either one domain or multiple domains
 - If you have a private DuckMail domain and API key, just put them in `.env`
-- Public DuckMail domains may work for mailbox creation and email retrieval, but may still be blocked by Tavily risk control
+- Public DuckMail domains can be used to test the mail path, but they are not
+  guaranteed to pass Tavily risk control
 
-### Upload to Your Own Server
+### Upload to Your Server
 
 ```env
 SERVER_URL=https://your-server.example.com
@@ -171,8 +186,11 @@ DEFAULT_UPLOAD=true
 
 Notes:
 
-- `DEFAULT_UPLOAD=true` means the launcher defaults to upload enabled
-- The actual upload decision still depends on the runtime choice you make when the launcher starts
+- `DEFAULT_UPLOAD=true` makes upload enabled by default in the launcher
+- The actual upload decision still depends on the runtime choice you make
+- Upload payloads include the `service` field
+- Tavily keys are automatically placed into the Tavily pool
+- Firecrawl keys are automatically placed into the Firecrawl pool
 
 ### Runtime Options
 
@@ -192,17 +210,26 @@ SOLVER_THREADS=1
 Notes:
 
 - `REGISTER_HEADLESS=true` keeps the browser in the background
-- If `FIRECRAWL_REGISTER_HEADLESS` is not set, it now inherits `REGISTER_HEADLESS`
-- Firecrawl now runs headless by default; if you hit `Security check failed`, temporarily switch it to `false` for visible-browser debugging
-- The actual solver thread count becomes `max(SOLVER_THREADS, selected concurrency)`
-- In normal use, you do not need to pass extra command-line arguments
+- `FIRECRAWL_REGISTER_HEADLESS` inherits `REGISTER_HEADLESS` if it is not set
+- If you hit `Security check failed`, temporarily switch headless off and debug
+  with a visible browser
+- The effective solver thread count becomes `max(SOLVER_THREADS, concurrency)`
+- In normal use, no extra command-line flags are needed
 
 ## Output
 
-Successful registrations are saved to:
+Successful registrations are written to:
+
+**Tavily**:
 
 ```text
 accounts.txt
+```
+
+**Firecrawl**:
+
+```text
+firecrawl_accounts.txt
 ```
 
 Format:
@@ -214,15 +241,22 @@ email,password,api_key
 
 ## Real-World Validation
 
-The current rebuilt flow has already been validated in real runs:
+The current mainline has been validated in real runs.
+
+**Tavily**:
 
 - Full registration works with the Cloudflare mail flow
 - Email verification codes can be fetched automatically
-- Extracted API keys are validated with real Tavily API requests
-- Concurrent registration has been tested
-- Random password-page challenge recovery has been added and verified in real runs
+- Extracted API keys are immediately validated with real API requests
+- Concurrent registration has been regression tested
+- Random password-page challenge recovery has been added and verified
 
-In the most recent regression runs, the password page twice reproduced the "submitted but did not redirect immediately" challenge case, and the new recovery logic successfully pulled the flow through both times.
+**Firecrawl**:
+
+- Email verification links can be fetched automatically
+- Automatic sign-in and API key extraction are supported
+- API key validation is done with real Firecrawl API requests
+- Uploads to the proxy server are auto-tagged with `service=firecrawl`
 
 ## Known Limitations
 
@@ -232,7 +266,7 @@ The current status of public DuckMail domains is:
 
 - Mailbox creation works
 - 6-digit verification-code retrieval works
-- Tavily may still block the flow on the password page
+- Tavily may still be blocked on the password page
 
 Common page message:
 
@@ -243,17 +277,20 @@ Suspicious activity detected
 If you want reliable full registration, prefer:
 
 - Cloudflare custom-domain mail
-- DuckMail private domain + API key
+- DuckMail private domain plus API key
 
 ### First Run on a New Machine
 
-On a new machine, it is better to run one account first before enabling concurrency.
+On a new machine, it is better to run one account first before enabling
+concurrency.
 
-The first run may need to download browser dependencies, and system/network/proxy conditions can differ across machines.
+The first run may need to download browser dependencies, and system, network,
+or proxy conditions can differ across machines.
 
 ### System-Level Prerequisites
 
-The launcher can bootstrap project dependencies and browser dependencies automatically, but it does not install Python itself.
+The launcher can bootstrap project dependencies and browser dependencies
+automatically, but it does not install Python itself.
 
 At minimum, the target machine should already have:
 
@@ -265,48 +302,43 @@ At minimum, the target machine should already have:
 
 ```text
 .
-├── run.py                    # Recommended entry point
-├── tavily_core.py            # Unified registration entry, forwards to browser flow
-├── tavily_browser_solver.py  # Main browser registration logic
-├── api_solver.py             # Local Turnstile solver
-├── mail_provider.py          # Mail provider abstraction
-├── config.py                 # .env / environment loading
-├── start_auto.sh             # macOS / Linux launcher
-├── start_auto.bat            # Windows launcher
-├── proxy/                    # Optional multi-service proxy (Tavily / Firecrawl)
-├── README.md                 # Chinese README
-└── README_EN.md              # English README
+├── run.py                       # Recommended entry point
+├── tavily_core.py               # Tavily registration entry
+├── tavily_browser_solver.py     # Tavily browser registration flow
+├── firecrawl_core.py            # Firecrawl registration entry
+├── firecrawl_browser_solver.py  # Firecrawl browser registration flow
+├── api_solver.py                # Local Turnstile solver (Tavily only)
+├── mail_provider.py             # Mail provider abstraction
+├── config.py                    # .env / environment loading
+├── start_auto.sh                # macOS / Linux launcher
+├── start_auto.bat               # Windows launcher
+├── proxy/                       # Optional multi-service proxy
+└── README.md
 ```
 
 ## Module Notes
 
-Some files are not primary entry points, but they are still part of the working runtime:
+Some files are not primary entry points, but they are still part of the
+runtime:
 
 - `tavily_core.py`
-  A compatibility layer that forwards the unified entry to the browser-based registration flow.
+  Compatibility layer that forwards the unified entry to the Tavily browser
+  flow.
 
 - `browser_configs.py`
-  Browser configuration helper for `api_solver.py`.
+  Browser configuration helper used by `api_solver.py`.
 
 - `db_results.py`
-  Result-storage helper for `api_solver.py`.
+  Result-storage helper used by `api_solver.py`.
 
 - `proxy/`
-  An optional standalone module for turning Tavily / Firecrawl keys into separate pooled proxy services.
-
-Runtime artifacts that should not be committed:
-
-- `.env`
-- `venv/`
-- `__pycache__/`
-- `accounts.txt`
-- `firecrawl_accounts.txt`
-- `proxy/data/`
+  Optional standalone module for turning Tavily / Firecrawl keys into separate
+  pooled proxy services.
 
 ## Optional Proxy Service
 
-If you want to pool registered keys behind a single endpoint, use `proxy/`.
-It now exposes isolated Tavily and Firecrawl pools, tokens, and quota sync.
+If you want to route registered keys behind one stable endpoint, use `proxy/`.
+It now exposes independent Tavily and Firecrawl pools, tokens, and quota sync.
 
 Start it with:
 
@@ -319,20 +351,24 @@ See [`proxy/README.md`](./proxy/README.md) for details.
 
 ## Recommended Usage
 
-If your goal is simply to batch-register and collect keys, the shortest path is:
+If your goal is simply to batch-register and collect keys, the shortest path
+is:
 
 1. Configure `.env`
 2. Run `python3 run.py`
-3. Choose the service (Tavily / Firecrawl)
+3. Choose the service: Tavily or Firecrawl
 4. Choose the mail domain
 5. Enter the registration count
 6. Enter the concurrency level
 7. Read the results from `accounts.txt` or `firecrawl_accounts.txt`
 
-If you also need centralized distribution, enable server upload or connect the generated keys to `proxy/`.
+If you also need centralized distribution, enable server upload or connect the
+generated keys to `proxy/`.
 
 ## Disclaimer
 
-This project is provided for automation testing, research, and personal learning purposes only.
+This project is provided for automation testing, research, and personal
+learning purposes only.
 
-You are responsible for evaluating the target service's terms, risk controls, and account-usage implications.
+You are responsible for evaluating the target service terms, risk controls,
+and account-usage implications.
