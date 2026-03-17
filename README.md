@@ -2,9 +2,9 @@
 
 [English Guide](./README_EN.md)
 
-这是当前的多服务注册器与聚合 API 上游工具，聚焦两件事：
+这是一个多服务注册器与聚合 API 上游工具，聚焦三件事：
 
-- 注册 `Firecrawl` / `Exa` key
+- 注册 `Tavily` / `Firecrawl` / `Exa` key
 - 验证 key 是否真实可用，并把可用 key 提供给统一搜索层
 
 ## 当前状态
@@ -22,7 +22,7 @@
 ## 这个仓库负责什么
 
 - 本地真实浏览器注册
-- Tavily 本地 Turnstile Solver
+- 本地 Turnstile Solver
 - 邮箱 API 自动收验证码 / 验证链接
 - 提取到 API Key 后立刻做真实调用验证
 - 可选自动上传到统一代理池
